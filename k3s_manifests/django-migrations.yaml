@@ -1,0 +1,26 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: django-migrations
+  namespace: django-app
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: k3s-django-app
+      containers:
+        - name: django-app
+          image: <your-docker-image>:latest
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "migrate"]
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: project.settings-k3s
+          envFrom:
+            - configMapRef:
+                name: django-app-config
+            - secretRef:
+                name: django-app-secret
+      restartPolicy: OnFailure
+  backoffLimit: 3
